@@ -191,3 +191,33 @@ footer{border-top:1px solid var(--line); padding:60px 0 calc(40px + env(safe-are
   body,a,button{cursor:auto;}
   .reveal-word span{transform:none; opacity:1; transition:none;}
 }
+
+/* ---- round 2: parallax, tilt, cursor label, gradient shift, preloader ---- */
+.hero-inner{will-change:transform;}
+#particles{will-change:transform;}
+
+.tilt{transform-style:preserve-3d; transition:transform .35s ease;}
+
+.cx-ring .cx-label{position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:10px; font-weight:600; letter-spacing:0.04em; color:var(--bg); background:var(--cyan); padding:3px 8px; border-radius:100px; white-space:nowrap; opacity:0; transition:opacity .2s; pointer-events:none;}
+.cx-ring.label .cx-label{opacity:1;}
+.cx-ring.label{background:transparent; border-color:transparent;}
+
+.g, .stat .num, .logo span{
+  background-size:200% auto;
+  animation:gradientDrift 6s ease-in-out infinite;
+}
+@keyframes gradientDrift{
+  0%,100%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+}
+
+#preloader{position:fixed; inset:0; z-index:10000; background:var(--bg); display:flex; align-items:center; justify-content:center; transition:opacity .6s ease, visibility .6s ease;}
+#preloader .pl-num{font-family:'Space Grotesk'; font-size:15px; color:var(--muted); letter-spacing:0.05em;}
+#preloader .pl-num span{color:var(--cyan);}
+#preloader.done{opacity:0; visibility:hidden; pointer-events:none;}
+
+@media (prefers-reduced-motion: reduce){
+  .g, .stat .num, .logo span{animation:none;}
+  .hero-inner, #particles{transform:none !important;}
+  #preloader{display:none;}
+}
