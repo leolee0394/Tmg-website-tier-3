@@ -143,20 +143,6 @@ document.querySelectorAll('.reveal-word').forEach((w, i) => {
 
 // ---- round 2 ----
 
-// inertial (eased) scroll via Lenis — a proper rAF-driven smoother instead of
-// a hand-rolled scrollTo loop, which fought the browser's own scroll handling
-// and read as stuttery. Falls back to plain native scroll if Lenis didn't load
-// (e.g. offline) or on touch / reduced-motion, where native scroll is correct anyway.
-if(fine && !reduceMotionCX && window.Lenis){
-  const lenis = new window.Lenis({
-    duration: 0.9,
-    easing: (t) => 1 - Math.pow(1 - t, 3),
-    smoothWheel: true
-  });
-  function raf(time){ lenis.raf(time); requestAnimationFrame(raf); }
-  requestAnimationFrame(raf);
-}
-
 // hero parallax — headline and particle field drift at different rates on scroll
 const heroInner = document.querySelector('.hero-inner');
 const heroCanvas = document.getElementById('particles');
@@ -172,7 +158,7 @@ if((heroInner || heroCanvas) && !reduceMotionCX){
 
 // 3D tilt on portfolio cards / bento tiles
 if(fine && !reduceMotionCX){
-  document.querySelectorAll('.pcard, .b-tile').forEach(el => {
+  document.querySelectorAll('.pcard, .b-tile, .pillar').forEach(el => {
     el.classList.add('tilt');
     el.addEventListener('mousemove', (e) => {
       const r = el.getBoundingClientRect();
@@ -230,4 +216,14 @@ if(preloader){
     if(numEl) numEl.textContent = n;
     if(n >= 100){ clearInterval(iv); setTimeout(() => preloader.classList.add('done'), 250); }
   }, 90);
+}
+
+// scroll-driven moving background orbs
+const orbs = document.querySelectorAll('.bg-field .orb');
+if(orbs.length && !reduceMotionCX){
+  const rates = [0.18, -0.14, 0.26];
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    orbs.forEach((o, i) => { o.style.transform = `translate3d(0, ${y * rates[i % rates.length]}px, 0)`; });
+  }, {passive:true});
 }
