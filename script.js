@@ -158,7 +158,7 @@ if((heroInner || heroCanvas) && !reduceMotionCX){
 
 // 3D tilt on portfolio cards / bento tiles
 if(fine && !reduceMotionCX){
-  document.querySelectorAll('.pcard, .b-tile, .pillar').forEach(el => {
+  document.querySelectorAll('.pcard, .b-tile:not([data-anim])').forEach(el => {
     el.classList.add('tilt');
     el.addEventListener('mousemove', (e) => {
       const r = el.getBoundingClientRect();
@@ -227,3 +227,49 @@ if(orbs.length && !reduceMotionCX){
     orbs.forEach((o, i) => { o.style.transform = `translate3d(0, ${y * rates[i % rates.length]}px, 0)`; });
   }, {passive:true});
 }
+
+// layout parallax — hero text, pillars, bento tiles each drift/rotate/scale
+// at their own rate as they cross the viewport, plus a light scroll-velocity
+// skew. Values are intentionally restrained (toned down from an earlier,
+// more exaggerated pass).
+(function(){
+  const animEls = document.querySelectorAll('[data-anim]');
+  if(!animEls.length || !fine || reduceMotionCX) return;
+  let lastY = window.scrollY, smoothedVel = 0;
+  let mouseX = -9999, mouseY = -9999;
+  window.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; }, {passive:true});
+  function tick(){
+    const vh = window.innerHeight;
+    const curY = window.scrollY;
+    const vel = curY - lastY; lastY = curY;
+    smoothedVel += (vel - smoothedVel) * 0.15;
+    const skew = Math.max(-4, Math.min(4, smoothedVel * 0.028));
+    animEls.forEach((el) => {
+      const rect = el.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
+      let progress = (cy - vh / 2) / (vh / 2);
+      progress = Math.max(-1.4, Math.min(1.4, progress));
+      const py = parseFloat(el.dataset.py || 0);
+      const px = parseFloat(el.dataset.px || 0);
+      const pr = parseFloat(el.dataset.pr || 0);
+      const ps = parseFloat(el.dataset.ps || 0);
+      const ty = -progress * py;
+      const tx = progress * px;
+      const rot = progress * pr;
+      const scale = 1 - Math.abs(progress) * ps;
+
+      // ambient cursor-proximity tilt (replaces the old hover-only tilt for
+      // elements that also move on scroll, so the two effects don't fight)
+      const dx = mouseX - cx, dy = mouseY - cy;
+      const dist = Math.hypot(dx, dy);
+      const radius = 420;
+      const influence = Math.max(0, 1 - dist / radius);
+      const tiltX = (-dy / radius) * 7 * influence;
+      const tiltY = (dx / radius) * 7 * influence;
+
+      el.style.transform = `perspective(700px) translate3d(${tx}px,${ty}px,0) rotateX(${tiltX}deg) rotateY(${tiltY}deg) rotate(${rot}deg) scale(${scale}) skewY(${skew}deg)`;
+    });
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
